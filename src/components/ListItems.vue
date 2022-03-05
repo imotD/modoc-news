@@ -67,7 +67,6 @@
                         {{ item.first_name }} {{ item.last_name }}
                       </v-list-item-title>
                       <v-list-item-subtitle class="text-caption text-secondary">
-                        <!-- 20 jam yang lalu -->
                         {{ timeAgo(item.created_at) }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
@@ -108,7 +107,26 @@ export default {
     more() {
       this.$emit("more");
     },
-    getFormattedDate(date, prefomattedDate = false, hideYear = false) {
+    timeAgo(dateParam) {
+      if (!dateParam) {
+        return null;
+      }
+
+      const today = new Date();
+      const date = new Date(dateParam);
+
+      const waktu1 = today.getTime();
+      const waktu2 = date.getTime();
+
+      const mili = waktu1 - waktu2;
+      const second = mili / 1000;
+      const minutes = Math.floor(second / 60);
+      const hourse = Math.floor(minutes / 60);
+      const day = Math.floor(hourse / 24);
+      const week = Math.floor(day / 7);
+      const month = Math.floor(week / 4);
+      const years = Math.floor(month / 12);
+
       const MONTH_NAMES = [
         "January",
         "February",
@@ -123,64 +141,28 @@ export default {
         "November",
         "December",
       ];
-      const day = date.getDate();
-      const month = MONTH_NAMES[date.getMonth()];
-      const year = date.getFullYear();
-      const hours = date.getHours();
-      let minutes = date.getMinutes();
 
-      if (minutes < 10) {
-        // Adding leading zero to minutes
-        minutes = `0${minutes}`;
-      }
+      const getDay = date.getDate();
+      const getMonth = MONTH_NAMES[date.getMonth()];
+      const getYear = date.getFullYear();
+      const getDate = `${getDay} ${getMonth} ${getYear}`;
 
-      if (prefomattedDate) {
-        // Today at 10:20
-        // Yesterday at 10:20
-        return `${prefomattedDate} at ${hours}:${minutes}`;
-      }
-
-      if (hideYear) {
-        // 10. January at 10:20
-        return `${day}. ${month} at ${hours}:${minutes}`;
-      }
-
-      // 10. January 2017. at 10:20
-      return `${day}. ${month} ${year}. at ${hours}:${minutes}`;
-    },
-    timeAgo(dateParam) {
-      if (!dateParam) {
-        return null;
-      }
-      const date =
-        typeof dateParam === "object" ? dateParam : new Date(dateParam);
-
-      const DAY_IN_MS = 86400; // 24 * 60 * 60 * 1000
-      const today = new Date();
-      const yesterday = new Date(today - DAY_IN_MS);
-      console.log(today, DAY_IN_MS);
-      const seconds = Math.round((today - date) / 1000);
-      const minutes = Math.round(seconds / 60);
-      const hourse = Math.round(minutes / 3600);
-      const isToday = today.toDateString() === date.toDateString();
-      const isYesterday = yesterday.toDateString() === date.toDateString();
-      const isThisYear = today.getFullYear() === date.getFullYear();
-      if (seconds < 5) {
+      if (second < 5) {
         return "baru";
-      } else if (seconds < 90) {
-        return `${seconds} detik yang lalu`;
       } else if (minutes < 60) {
         return `${minutes} menit yang lalu`;
-      } else if (hourse < 3600) {
+      } else if (hourse < 24) {
         return `${hourse} jam yang lalu`;
-      } else if (isToday) {
-        return this.getFormattedDate(date, "Today"); // Today at 10:20
-      } else if (isYesterday) {
-        return this.getFormattedDate(date, "Yesterday"); // Yesterday at 10:20
-      } else if (isThisYear) {
-        return this.getFormattedDate(date, false, true); // 10. January at 10:20
+      } else if (day < 7) {
+        return `${day} hari yang lalu`;
+      } else if (week < 4) {
+        return `${week} minggu yang lalu`;
+      } else if (month < 12) {
+        return `${month} bulan yang lalu`;
+      } else if (years < 3) {
+        return `${years} tahun yang lalu`;
       }
-      return this.getFormattedDate(date); // 10. January 2017. at 10:20
+      return getDate;
     },
   },
 };
